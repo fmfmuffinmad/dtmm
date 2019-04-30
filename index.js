@@ -69,18 +69,19 @@ fs.readFile(SFDX_CONFIG_PATH, {encoding: 'utf8', flag: 'r+'}, (err, sfdx) => {
 		// TODO: add users to local data
 	}
 
-	fs.readFile(DTMM_DATA_PATH, {encoding: 'utf8', flag: 'w+'}, (err, fileData) => {
+	fs.readFile(DTMM_DATA_PATH, {encoding: 'utf8', flag: 'r'}, (err, fileData) => {
 		if (err) {
 			throw err;
 		}
 		startData = fileData !== '' ? JSON.parse(fileData) : startData;
 
-		fs.readFile(DTMM_LOCAL_DATA_PATH, {encoding: 'utf8', flag: 'w+'}, (err, localData) => {
+		fs.readFile(DTMM_LOCAL_DATA_PATH, {encoding: 'utf8', flag: 'r'}, (err, localData) => {
 			if (err) {
 				throw err;
 			}
 	
 			startLocalData = localData !== '' ? JSON.parse(localData) : startLocalData;
+			console.log('logogo: ', startLocalData);
 			init(JSON.parse(sfdx), startData, startLocalData);
 		});
 	});
