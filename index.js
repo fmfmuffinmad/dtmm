@@ -9,12 +9,13 @@ const LOG_SUCCESS = 'SCC';
 const LOG_WARNING = 'WRN';
 const LOG_ERROR = 'ERR';
 const SFDX_CONFIG_PATH = './sfdx-project.json';
-const DTMM_CONFIG_PATH = './dtmm-config.json';
-const DTMM_DATA_PATH = './dtmm-data.json';
-const DTMM_LOCAL_DATA_PATH = './dtmm-local-data.json';
+const DTMM_CONFIG_PATH = './dtmm/dtmm-config.json';
+const DTMM_DATA_PATH = './dtmm/dtmm-data.json';
+const DTMM_LOCAL_DATA_PATH = './dtmm/dtmm-local-data.json';
 
 var startData = {
-	features: []
+	features: [],
+	files: []
 };
 
 var startLocalData = {
@@ -60,27 +61,34 @@ fs.readFile(SFDX_CONFIG_PATH, {encoding: 'utf8', flag: 'r+'}, (err, sfdx) => {
 	}
 
 	// Check if user has authorized orgs configured on their SFDX files
+	log(LOG_MESSAGE, 'sfdx', 'Checking avaliable orgs...');
 	let SFDX_orgs = JSON.parse(execSync(`sfdx force:org:list --json`, { encoding: 'utf-8' }));
 	if (SFDX_orgs.status !== 0) {
 		log(LOG_ERROR, 'sfdx', SFDX_orgs.message);
 		log(LOG_WARNING, 'dtmm', 'Requesting auth... Stand by for incoming BROWSER HACKS... just kiddin, we need you to authorize a org... ');
 		execSync(`sfdx force:auth:web:login --setalias default-dev --instanceurl https://test.salesforce.com --setdefaultusername`, { encoding: 'utf-8' });
+		process.exit();
 	} else {
-		// TODO: add users to local data
+		console.log(SFDX_orgs);
 	}
 
 	fs.readFile(DTMM_DATA_PATH, {encoding: 'utf8', flag: 'r'}, (err, fileData) => {
 		if (err) {
-			throw err;
+			//throw err;
+			if (err.message === 'ENOENT') {
+				fs.writeFile(DTMM_DATA_PATH, JSON.stringify(startData), (err) => {if (err) throw err});
+			}
 		}
-		startData = fileData !== '' ? JSON.parse(fileData) : startData;
+		if (fileData) startData = fileData !== '' ? JSON.parse(fileData) : startData;
 
 		fs.readFile(DTMM_LOCAL_DATA_PATH, {encoding: 'utf8', flag: 'r'}, (err, localData) => {
 			if (err) {
-				throw err;
+				if (err.message === 'ENOENT') {
+					fs.writeFile(DTMM_LOCAL_DATA_PATH, JSON.stringify(startLocalData), (err) => {if (err) throw err});
+				}
 			}
-	
-			startLocalData = localData !== '' ? JSON.parse(localData) : startLocalData;
+			
+			if (localData) startLocalData = localData !== '' ? JSON.parse(localData) : startLocalData;
 			init(JSON.parse(sfdx), startData, startLocalData);
 		});
 	});
@@ -103,15 +111,21 @@ init = (config, data, localData) => {
 	if (data.features.filter(v => v.name === localData.currentFeature.name).length === 0) data.features.push(localData.currentFeature);
 
 	chokidar.watch(obj.watch).on('all', (event, path) => {
-		
+		let file;
 		switch(event) {
 			case 'add':
-				localData.watch.push({
-					path
-				});
+				// localData.watch.push({
+				// 	path
+				// });
+				file = {
+					path,
+					lastDeploy: '',
+					lastDeployedBy: ''
+				}
+				data.files = addFileToList(file, data.files);
 				break;
 			case 'change': 
-				let file = {
+				file = {
 					path,
 					lastDeploy: ''
 				}
