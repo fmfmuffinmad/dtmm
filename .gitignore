@@ -1,0 +1,12 @@
+/node_modules
+/.sfdx
+/.vscode
+/config
+dtmm-local-data.json
+sfdx-project.json
+readme.md
+
+# Delete lines below after downloading this project
+/force-app
+dtmm-data.json
+.forceignore

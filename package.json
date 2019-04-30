@@ -1,0 +1,17 @@
+{
+  "name": "dtmm",
+  "version": "1.0.0",
+  "description": "Death to mavensmate",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Arthur Caputo Alves Ferreira",
+  "license": "MIT",
+  "devDependencies": {
+    "chalk": "^2.4.2",
+    "chokidar": "^2.1.5",
+    "nodemon": "^1.18.11"
+  }
+}
