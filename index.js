@@ -30,7 +30,7 @@ const log = (type = LOG_MESSAGE, category = '', message = 'foo') => {
 	let tag;
 	switch (type) {
 		case LOG_MESSAGE:
-			tag = chalk.white(`${type}`);
+			tag = chalk.bgCyan.black(`${type}`);
 			break;
 		case LOG_SUCCESS:
 			tag = chalk.green(`${type}`);
@@ -81,7 +81,6 @@ fs.readFile(SFDX_CONFIG_PATH, {encoding: 'utf8', flag: 'r+'}, (err, sfdx) => {
 			}
 	
 			startLocalData = localData !== '' ? JSON.parse(localData) : startLocalData;
-			console.log('logogo: ', startLocalData);
 			init(JSON.parse(sfdx), startData, startLocalData);
 		});
 	});
@@ -100,9 +99,6 @@ init = (config, data, localData) => {
 	nodemon(obj);
 
 	if (data.features.length === 0) data.features.push(localData.currentFeature);
-
-	console.log('local: ' + localData);
-	console.log(data);
 
 	if (data.features.filter(v => v.name === localData.currentFeature.name).length === 0) data.features.push(localData.currentFeature);
 
@@ -129,7 +125,7 @@ init = (config, data, localData) => {
 				break;
 		}
 		
-		log(LOG_WARNING, event, path + ' => ' + JSON.stringify(data));
+		log(LOG_MESSAGE, event, path);
 		fs.writeFile(DTMM_DATA_PATH, JSON.stringify(data), (err) => {if (err) throw err});
 		fs.writeFile(DTMM_LOCAL_DATA_PATH, JSON.stringify(localData), (err) => {if (err) throw err});
 	});
