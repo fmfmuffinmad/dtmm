@@ -1,7 +1,7 @@
 var nodemon = require('nodemon');
 var chokidar = require('chokidar');
 const execSync = require('child_process').execSync;
-const chalk = require('chalk');
+const log = require('./utils/log');
 const fs = require('fs');
 
 const LOG_MESSAGE = 'MSG';
@@ -12,43 +12,6 @@ const SFDX_CONFIG_PATH = './sfdx-project.json';
 const DTMM_CONFIG_PATH = './dtmm/dtmm-config.json';
 const DTMM_DATA_PATH = './dtmm/dtmm-data.json';
 const DTMM_LOCAL_DATA_PATH = './dtmm/dtmm-local-data.json';
-
-var startData = {
-	features: [],
-	files: []
-};
-
-var startLocalData = {
-	watch: [],
-	currentFeature: {
-		name: 'default',
-		files: [],
-		lastDeploy: ''
-	}
-};
-
-const log = (type = LOG_MESSAGE, category = '', message = 'foo') => {
-	let tag;
-	switch (type) {
-		case LOG_MESSAGE:
-			tag = chalk.bgCyan.black(`${type}`);
-			break;
-		case LOG_SUCCESS:
-			tag = chalk.green(`${type}`);
-			break;
-		case LOG_WARNING:
-			tag = chalk.yellow(`${type}`);
-			break;
-		case LOG_ERROR:
-			tag = chalk.red(`${type}`);
-			break;
-	}
-	console.log(`dtmm ${tag} ${chalk.magenta(category)} ${message}`);
-}
-
-// Things starts here
-
-// execSync(`sfdx force:source:deploy --sourcepath ${path} --loglevel fatal`, { encoding: 'utf-8' })
 
 fs.readFile(DTMM_LOCAL_DATA_PATH, {encoding: 'utf8', flag: 'r+'}, (err, sfdx) => {
     let data = JSON.parse(sfdx);
