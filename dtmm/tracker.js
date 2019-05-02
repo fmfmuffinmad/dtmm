@@ -5,61 +5,25 @@ import chokidar from 'chokidar';
 import fs from 'fs';
 import {execSync} from 'child_process';
 
-var startData = {
-	features: [],
-	files: []
-};
-
-var startLocalData = {
-	watch: [],
-	currentFeature: {
-		name: 'default',
-		files: [],
-		lastDeploy: ''
-	}
-};
-
-fs.readFile(consts.SFDX_CONFIG_PATH, {encoding: 'utf8', flag: 'r+'}, (err, sfdx) => {
+fs.readFile(consts.DTMM_DATA_PATH, {encoding: 'utf8', flag: 'r'}, (err, fileData) => {
 	if (err) {
-		if ( err.code = 'ENOENT') {
-			log(consts.LOG_ERROR, 'config', 'No sfdx-project.json found! Please create a SFDX project... and authorize, jackass...');
-			process.exit();
+		//throw err;
+		if (err.message === 'ENOENT') {
+			fs.writeFile(consts.DTMM_DATA_PATH, JSON.stringify(startData), (err) => {if (err) throw err});
 		}
 	}
+	if (fileData) startData = fileData !== '' ? JSON.parse(fileData) : startData;
 
-	// Check if user has authorized orgs configured on their SFDX files
-	log(consts.LOG_MESSAGE, 'sfdx', 'Checking avaliable orgs...');
-	let sfdx_orgs = JSON.parse(execSync(`sfdx force:org:list --json`, { encoding: 'utf-8' }));
-	if (sfdx_orgs.status !== 0) {
-		log(consts.LOG_ERROR, 'sfdx', sfdx_orgs.message);
-		log(consts.LOG_WARNING, 'dtmm', 'Requesting auth... Stand by for incoming BROWSER HACKS... just kiddin, we need you to authorize a org... ');
-		execSync(`sfdx force:auth:web:login --setalias default-dev --instanceurl https://test.salesforce.com --setdefaultusername`, { encoding: 'utf-8' });
-		process.exit();
-	} else {
-		console.log(sfdx_orgs);
-	}
-
-	fs.readFile(consts.DTMM_DATA_PATH, {encoding: 'utf8', flag: 'r'}, (err, fileData) => {
+	fs.readFile(consts.DTMM_LOCAL_DATA_PATH, {encoding: 'utf8', flag: 'r'}, (err, localData) => {
 		if (err) {
-			//throw err;
 			if (err.message === 'ENOENT') {
-				fs.writeFile(consts.DTMM_DATA_PATH, JSON.stringify(startData), (err) => {if (err) throw err});
+				fs.writeFile(consts.DTMM_LOCAL_DATA_PATH, JSON.stringify(startLocalData), (err) => {if (err) throw err});
 			}
 		}
-		if (fileData) startData = fileData !== '' ? JSON.parse(fileData) : startData;
-
-		fs.readFile(consts.DTMM_LOCAL_DATA_PATH, {encoding: 'utf8', flag: 'r'}, (err, localData) => {
-			if (err) {
-				if (err.message === 'ENOENT') {
-					fs.writeFile(consts.DTMM_LOCAL_DATA_PATH, JSON.stringify(startLocalData), (err) => {if (err) throw err});
-				}
-			}
-			
-			if (localData) startLocalData = localData !== '' ? JSON.parse(localData) : startLocalData;
-			init(JSON.parse(sfdx), startData, startLocalData);
-		});
+		
+		if (localData) startLocalData = localData !== '' ? JSON.parse(localData) : startLocalData;
+		init(JSON.parse(sfdx), startData, startLocalData);
 	});
-	
 });
 
 const init = (config, data, localData) => {

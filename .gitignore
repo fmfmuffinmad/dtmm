@@ -5,6 +5,7 @@
 dtmm-local-data.json
 sfdx-project.json
 readme.md
+orglist.txt
 
 # Delete lines below after downloading this project
 /force-app
